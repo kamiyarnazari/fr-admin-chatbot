@@ -1,0 +1,18 @@
+[
+  {
+    "question": "Comment demander une carte vitale ?",
+    "answer": "Vous pouvez demander votre carte Vitale sur le site de l’Assurance Maladie, dans votre compte Ameli."
+  },
+  {
+    "question": "Quels documents sont nécessaires pour le renouvellement d’un titre de séjour ?",
+    "answer": "Vous devez fournir votre ancien titre, une pièce d'identité, des photos d'identité et un justificatif de domicile."
+  },
+  {
+    "question": "Comment faire une demande d'APL ?",
+    "answer": "La demande d'APL se fait en ligne sur le site de la CAF après avoir créé un compte."
+  },
+  {
+    "question": "Comment obtenir une attestation de droits ?",
+    "answer": "Vous pouvez la télécharger directement depuis votre compte Ameli."
+  }
+]
