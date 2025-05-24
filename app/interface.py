@@ -9,10 +9,10 @@ def respond_to_user(message):
 # Gradio UI Setup
 chatbot_UI = gr.Interface(
     fn=respond_to_user,
-    inputs=gr.Textbox(label="Posez votre question ici"),
-    outputs=gr.Textbox(label="Réponse du chatbot"),
+    inputs=gr.Textbox(lines=2, label="Posez votre question ici"),
+    outputs=gr.Markdown(label="Réponses proposées"),
     title="Chatbot Administratif Français",
-    description="vous pouvez posez des questions sur la CAF, CPAM, préfecture, etc."
+    description="Voici les réponses les plus pertinentes basées sur votre question."
 )
 
 if __name__ == "__main__":
