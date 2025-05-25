@@ -3,17 +3,47 @@ from chatbot.core import FAQRetriever
 
 retreiever = FAQRetriever("data/faq.json")
 
-def respond_to_user(message):
-    return retreiever.get_answer(message)
+# Main response function
+def respond(message, chat_history):
+    response = retreiever.get_answer(message)
+    chat_history.append((message, response))
+    return chat_history, ""
 
-# Gradio UI Setup
-chatbot_UI = gr.Interface(
-    fn=respond_to_user,
-    inputs=gr.Textbox(lines=2, label="Posez votre question ici"),
-    outputs=gr.Markdown(label="Réponses proposées"),
-    title="Chatbot Administratif Français",
-    description="Voici les réponses les plus pertinentes basées sur votre question."
-)
 
-if __name__ == "__main__":
-    chatbot_UI.launch()
+# Building UI using Blocks
+with gr.Blocks() as demo:
+    gr.Markdown("# 🤖 Chatbot Administratif Français")
+    gr.Markdown("Posez des questions sur la CAF, CPAM, la préfecture, etc.")
+
+    # chat display component
+    chatbot = gr.Chatbot()
+
+    # Input txt box for user messages
+    msg = gr.Textbox(
+        placeholder="Tapez votre question ici...",
+        label="",
+        container=True
+    )
+
+    examples = gr.Examples(
+        examples=[
+            "Comment faire une demande d'APL ?",
+            "Quels documents pour renouveler un titre de séjour ?",
+            "Comment obtenir une carte vitale ?"
+        ],
+        inputs=msg,
+        fn=respond,
+        outputs=[chatbot,msg],
+        cache_examples=False,
+        label="Examples rapides"
+    )
+
+    # Buttons: Submit and Clear history
+    with gr.Row():
+        submit_btn = gr.Button("Envoyer")
+        clear_btn = gr.Button("Effacer")
+
+    # Configuring interactions
+    submit_btn.click(respond, [msg, chatbot], [chatbot, msg])
+    msg.submit(respond, [msg, chatbot], [chatbot, msg])
+    clear_btn.click(lambda: ([], ""), [], outputs=[chatbot,msg])

@@ -1,4 +1,4 @@
-from app.interface import chatbot_UI
+from app.interface import demo
 
 if __name__ == "__main__":
-    chatbot_UI.launch()
+    demo.launch()

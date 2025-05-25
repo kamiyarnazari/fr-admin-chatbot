@@ -12,7 +12,13 @@ class FAQRetriever:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def get_answer(self, user_input: str, threshold: float = 0.3, top_k: int = 2) -> str:
+    def get_answer(self, user_input: str, threshold: float = 0.3,
+                    top_k: int = 2, high_confidence = 0.8) -> str:
+        # If the question is the same in db just respond with the corresponding answer
+        normalized = user_input.strip().lower()
+        for item in self.faq_data:
+            if item["question"].strip().lower() == normalized:
+                return item["answer"]
         input_embedding = self.model.encode(user_input, convert_to_tensor=True)
         scores = util.cos_sim(input_embedding, self.embeddings)[0]
 
@@ -23,6 +29,11 @@ class FAQRetriever:
 
         top_indices = scores.topk(k=top_k).indices.tolist()
         top_scores = scores.topk(k=top_k).values.tolist()
+
+        # If the score is extremely high, then just return that one
+        if top_scores[0] >= high_confidence:
+            idx = top_indices[0]
+            return self.faq_data[idx]["answer"]
 
         responses = []
 
