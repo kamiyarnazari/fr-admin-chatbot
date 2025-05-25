@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer, util
 
 class FAQRetriever:
     def __init__(self, faq_path: str):
-        self.model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+        self.model = SentenceTransformer('sentence-transformers/distiluse-base-multilingual-cased-v1')
         self.faq_data = self._load_faq(faq_path)
         self.questions = [item["question"] for item in self.faq_data]
         self.embeddings = self.model.encode(self.questions, convert_to_tensor=True)
