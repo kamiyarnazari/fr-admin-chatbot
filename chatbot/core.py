@@ -47,5 +47,6 @@ class FAQRetriever:
         if not responses:
             return "Je ne suis pas sûr de comprendre votre question. Pouvez-vous la reformuler ?"
 
+
         return "\n".join(responses)
     
