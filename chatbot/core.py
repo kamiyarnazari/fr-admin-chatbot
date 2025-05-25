@@ -43,14 +43,9 @@ class FAQRetriever:
             q = self.faq_data[idx]["question"]
             a = self.faq_data[idx]["answer"]
             responses.append(f"🔹 **{q}**\n{a}\n")
-        # best_match_idx = scores.argmax().item()
-        # best_score = scores[best_match_idx].item()
 
         if not responses:
             return "Je ne suis pas sûr de comprendre votre question. Pouvez-vous la reformuler ?"
-        
-        # matched_question = self.faq_data[best_match_idx]["question"]
-        # answer = self.faq_data[best_match_idx]["answer"]
 
         return "\n".join(responses)
     
