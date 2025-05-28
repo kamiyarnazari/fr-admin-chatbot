@@ -26,9 +26,9 @@ class FAQWithLLM:
         ]
 
         # Loading Local LLm for fallback (Flan -T5 base)
-        self.tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
+        self.tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-base")
         self.generator = AutoModelForSeq2SeqLM.from_pretrained(
-            "google/flan-t5-large",
+            "google/flan-t5-base",
             device_map = "auto",
             torch_dtype = "auto"
         )
@@ -37,9 +37,8 @@ class FAQWithLLM:
              model=self.generator,
              tokenizer=self.tokenizer,
              max_length=200,
-             do_sample=False,
-             top_p=0.9,
-        )
+             do_sample=False         # greedy/beam search      
+             )
 
     def _load_faq(self, path: str):
         with open(path, "r", encoding="utf-8") as f:
@@ -95,75 +94,30 @@ class FAQWithLLM:
 
         return "\n".join(responses)
     
+    
+    
     def generate_via_LLM(
             self,
             user_input: str,
-            chat_history = None
+            chat_history
     ) -> str:
-        # Message array for message completion
-        # messages = [
-        #     {"role": "system", "content": "Vous êtes un assistant serviable pour des questions administratives en français."}
-        # ]
-        # if chat_history:
-        #     for u, b in chat_history:
-        #         messages.append({"role": "user",     "content": u})
-        #         messages.append({"role:": "assistance", "content": b})
-
-        # messages.append({"role": "user", "content": user_input})
-
-
-        # try:
-        #     # Calling the OpenAI API
-        #     resp = client.chat.completions.create(
-        #         model="gpt-3.5-turbo",
-        #         messages=messages,
-        #         max_tokens=200,
-        #         temperature=0.7
-        # )
-        #     return resp.choices[0].message.content.strip()
-        
-        # except RateLimitError as e:
-        #     print("OpenAI rate-limit:", e)  # logs the error
-        #     return "⚠️ Le service IA est temporairement indisponible (quota). Voici quelques FAQ :\n\n" + self._faq_fallback(user_input)
-
-        # except OpenAIError as e:
-        #     # for other OpenAI issues (invalid key, timeout, etc.)
-        #     print("OpenAI error:", e)
-        #     # re-raise so you notice it—unless you want to fallback here too
-        #     raise
-
-        # except Exception as e:
-        #     # unexpected errors
-        #     print("Unexpected error in LLM call:", e)
-        #     raise
-        prompt = (
-            "Vous êtes un assistant administratif français.\n"
-            "Répondez aux questions marquées Q: par une réponse après A:.\n\n"
-        )
+        prompt = []
         if chat_history:
              # chat_history is list of tuples (user,bot)
-            turns = chat_history[-2:]  # last 2 pairs
-            for u, b in turns:
-                prompt += f"Q: {u}\nA: {b}\n"
+            turns = chat_history[-4:]  # last 4 pairs (2 Q/As)
+            for msg in turns:
+                if msg["role"] == "user":
+                    prompt += f"Q: {msg['content']}\n"
+                else:
+                    prompt += f"A: {msg['content']}\n"
             prompt += "\n"
-        # Add the new question
-        prompt += f"Q: {user_input}\nA:"
+        #Add the new question
+        prompt = f"Q: {user_input}\nA:"
 
         # Running the LLM through local pipeline
-        gen = self.flan_pipe(prompt, max_length=200)[0]["generated_text"]
-        return gen.split("Q:", 1)[0].strip()
+        gen = self.flan_pipe(
+            prompt,
+            max_length=100
+            )[0]["generated_text"]
         
-    def _faq_fallback(self, user_input: str) -> str:   
-        """Simple two-answer fallback when LLM is unavailable."""
-        input_emb = self.model.encode(user_input, convert_to_tensor=True)
-        scores = util.cos_sim(input_emb, self.embeddings)[0]
-        top = scores.topk(k=2)
-        resp = []
-        for idx, score in zip(top.indices.tolist(), top.values.tolist()):
-            if score < 0.3:
-                continue
-            item = self.faq_data[idx]
-            resp.append(f"🔹 **{item['question']}**\n{item['answer']}")
-        if not resp:
-            return "*Je ne suis pas sûr de comprendre votre question. Pouvez-vous la reformuler ?*"
-        return "\n\n".join(resp)
+        return gen.strip()
