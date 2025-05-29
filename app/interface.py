@@ -1,6 +1,7 @@
 import gradio as gr
 from chatbot.core import FAQWithLLM
 
+
 retriever = FAQWithLLM("data/faq.json")
 
 # Main response function
@@ -20,7 +21,6 @@ def respond(message, chat_history):
 with gr.Blocks() as demo:
     gr.Markdown("# 🤖 Chatbot Administratif Français")
     gr.Markdown("Posez des questions sur la CAF, CPAM, la préfecture, etc.")
-
     # chat display component
     chatbot = gr.Chatbot(type="messages")
 

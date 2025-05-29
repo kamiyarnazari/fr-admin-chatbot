@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# evaluate_models.py
-
 import json
 from transformers import pipeline
 
