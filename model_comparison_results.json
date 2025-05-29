@@ -1,0 +1,39 @@
+{
+  "questions": [
+    "Comment puis-je contacter la CAF pour une question sur mon dossier ?",
+    "Je voudrais prendre rendez-vous avec la CPAM, comment procéder ?",
+    "Quels sont les horaires d’ouverture de la préfecture ?",
+    "Où télécharger le formulaire de déclaration d’impôts ?",
+    "Peux-tu me raconter une blague en français ?"
+  ],
+  "results": {
+    "google/flan-t5-small": [
+      "Do you want to contact the CAF for a question on my dossier?",
+      "I would like to meet with the CPAM, how to proceed.",
+      "What are the horaires of the prefecture?",
+      "",
+      "I am a French assistant. Do you have any questions?"
+    ],
+    "google/flan-t5-base": [
+      "Vous êtes un assistant administratif français. N'oubliez pas et répondez en phrases complètes.",
+      "Je voudrais prendre rendez-vous avec la CPAM, comment procéder ?",
+      "7:00 a.m. - 6:00 p.m. - 7:00 p.m. - 8:00 p.m. - 8:00 p.m. - 8:00 p.m. - 8:00 p.m. - 8:00 p.m. - 8:00 p.m.",
+      "Vous êtes un administratif français. Ne répétez la question et répondez en phrases complètes.",
+      "Vous êtes un assistant administratif français. Ne répétez pas la question et répondez en phrases complètes."
+    ],
+    "google/flan-t5-large": [
+      "Vous êtes un assistant administratif français. Ne répétez pas et répondez en phrases complètes.",
+      "Je voudrais prendre rendez-vous avec la CPAM, comment procéder ?",
+      "Quels sont les horaires d’ouverture de la préfecture ?",
+      "Vous êtes un assistant administratif français. Ne répétez pas et répondez en phrases complètes.",
+      "Vous êtes un assistant administratif français. Ne répétez pas et répondez en phrases complètes."
+    ],
+    "bigscience/bloomz-1b7": [
+      "répondez en phrases complètes",
+      "répondez en phrases complètes",
+      "français. Ne répétez pas la question et répondez en phrases complètes. français. Ne répétez pas la question et répondez en phrases complètes. français. Ne répétez pas la question et répondez en phrases complètes. français. Ne répétez pas la question et répondez en phrases complètes. français. Ne répétez pas la question et répon",
+      "http://impots.gouv.fr",
+      "Répondez en phrases complètes."
+    ]
+  }
+}
