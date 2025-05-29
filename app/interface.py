@@ -1,12 +1,19 @@
 import gradio as gr
-from chatbot.core import FAQRetriever
+from chatbot.core import FAQWithLLM
 
-retreiever = FAQRetriever("data/faq.json")
+
+retriever = FAQWithLLM("data/faq.json")
 
 # Main response function
 def respond(message, chat_history):
-    response = retreiever.get_answer(message)
-    chat_history.append((message, response))
+    if chat_history is None:
+        chat_history = []
+
+    answer = retriever.get_answer(message, chat_history)
+
+    chat_history.append({"role": "user",      "content": message})
+    chat_history.append({"role": "assistant", "content": answer})
+
     return chat_history, ""
 
 
@@ -14,9 +21,8 @@ def respond(message, chat_history):
 with gr.Blocks() as demo:
     gr.Markdown("# 🤖 Chatbot Administratif Français")
     gr.Markdown("Posez des questions sur la CAF, CPAM, la préfecture, etc.")
-
     # chat display component
-    chatbot = gr.Chatbot()
+    chatbot = gr.Chatbot(type="messages")
 
     # Input txt box for user messages
     msg = gr.Textbox(
