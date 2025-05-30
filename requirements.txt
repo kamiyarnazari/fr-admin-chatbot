@@ -2,3 +2,5 @@ transformers
 sentence-transformers
 scikit-learn
 gradio
+torch
+huggingface-hub
