@@ -70,7 +70,7 @@ fr-admin-chatbot/
    pip install -r requirements.txt
    ```
 
-2. **(Optional) Use a virtual environment**
+2. **(Optional but recommended) Use a virtual environment**
 
    ```bash
    python -m venv venv
