@@ -105,6 +105,12 @@ class FAQWithLLM:
                    threshold: float = 0.7,
                    top_k: int = 2,
                    high_confidence: float = 0.8) -> str:
+        
+        # If the user input is empty
+        if not user_input.strip():
+            return "Veuillez poser votre question et je vous aiderai avec plaisir."
+        
+
         normalized = user_input.strip().lower()
 
         # Small‐talk detection
