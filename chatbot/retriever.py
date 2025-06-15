@@ -8,6 +8,28 @@ from sentence_transformers import SentenceTransformer, util
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
 
+"""
+Hybrid semantic retriever and LLM-based generator for the French Administration Chatbot.
+
+This module implements the `FAQWithLLM` class, which handles both:
+1. **Semantic retrieval**: Finds the most relevant FAQ entries using multilingual sentence embeddings (SentenceTransformer).
+2. **LLM fallback generation**: If no suitable match is found, generates a response using a fine-tuned LoRA adapter on top of the Mistral-7B model.
+
+Key Features:
+- Uses cosine similarity to retrieve top FAQ candidates
+- Detects and responds to small talk (e.g., "bonjour", "ça va")
+- Falls back to a quantized, fine-tuned LLM when no FAQ is confident enough
+- Supports CPU and GPU with 4-bit quantization via `BitsAndBytesConfig`
+- Loads LoRA adapters using `peft.PeftModel`
+
+Usage:
+- Called by the Gradio UI to handle user input and return the appropriate answer
+- Returns either: (1) an exact or semantic match, or (2) an LLM-generated fallback
+
+This architecture combines speed and control from FAQ with flexibility and coverage from LLMs.
+"""
+
+
 
 
 class FAQWithLLM:

@@ -1,7 +1,38 @@
+# Byte-compiled / cache files
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+
+# Virtual environment
+venv/
 .env
+.env.*
+
+# Logs and debug info
 *.log
 *.db
+
+# Scripts and OS files
 gitpush.sh
+.DS_Store
+Thumbs.db
+
+# Model artifacts
 models/
+offload_dir/
+*.safetensors
+*.pt
+*.bin
+
+# DVC/MLflow/Weights & Biases (if used later)
+.dvc/
+.mlflow/
+wandb/
+artifacts/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# VSCode or PyCharm
+.vscode/
+.idea/
