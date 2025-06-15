@@ -1,5 +1,9 @@
 import gradio as gr
-from chatbot.core import FAQWithLLM
+from chatbot.retriever import FAQWithLLM
+
+"""
+UI module for French administration chatbot. Uses Gradio for user interaction.
+"""
 
 
 retriever = FAQWithLLM("data/faq.json")

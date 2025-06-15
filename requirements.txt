@@ -4,3 +4,4 @@ scikit-learn
 gradio
 torch
 huggingface-hub
+peft
