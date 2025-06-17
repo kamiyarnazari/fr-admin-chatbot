@@ -36,3 +36,6 @@ artifacts/
 # VSCode or PyCharm
 .vscode/
 .idea/
+
+# MLflow
+mlruns/
