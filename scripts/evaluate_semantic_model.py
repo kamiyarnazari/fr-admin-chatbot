@@ -2,7 +2,17 @@ import mlflow
 from sentence_transformers import SentenceTransformer, util
 import json
 import torch
+import shutil
+import mlflow.pyfunc
+import panda as pd
 
+class SentenceTransformerWrapper(mlflow.pyfunc.PythonModel):
+    def load_context(self, context):
+        from sentence_transformers import SentenceTransformer
+        return SentenceTransformer("sentence-transformers/distiluse-base-multilingual-cased-v1")
+
+    def predict(self, context, model_input) -> pd.Series:
+        return self.model.encode(model_input.tolist())
 
 mlflow.set_experiment("faq-semantic-vs-llm")
 
@@ -42,3 +52,16 @@ with mlflow.start_run():
         json.dump(results, f, indent=2)
 
     mlflow.log_artifact("scripts/model-comparison-results.json", artifact_path = "evaluation")
+
+    # Save the model locally to a temp file
+    model_save_path = "models/faq-semantic-model"
+    model.save(model_save_path)
+
+    # Log the folder as an artifact for mlflow
+    mlflow.pyfunc.log_model(
+        name="semantic_model",
+        python_model=SentenceTransformerWrapper(),
+        registered_model_name="faq-semantic-model"
+    )
+
+    shutil.rmtree(model_save_path)
