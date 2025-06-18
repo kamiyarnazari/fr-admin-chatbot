@@ -2,6 +2,7 @@ import time
 import json
 from sentence_transformers import SentenceTransformer, util
 
+
 """
 Benchmark script to compare semantic retrievers using a fixed test suite.
 
@@ -9,6 +10,7 @@ Evaluates accuracy and response time of various multilingual SentenceTransformer
 on a set of paraphrased and off-topic French administrative questions.
 
 """
+
 
 
 # Loading the FAQ 
