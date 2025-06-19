@@ -9,10 +9,10 @@ import panda as pd
 class SentenceTransformerWrapper(mlflow.pyfunc.PythonModel):
     def load_context(self, context):
         from sentence_transformers import SentenceTransformer
-        return SentenceTransformer("sentence-transformers/distiluse-base-multilingual-cased-v1")
+        self.model =  SentenceTransformer("sentence-transformers/distiluse-base-multilingual-cased-v1")
 
     def predict(self, context, model_input) -> pd.Series:
-        return self.model.encode(model_input.tolist())
+        return model_input.apply(lambda x: self.model.encode([x])[0])
 
 mlflow.set_experiment("faq-semantic-vs-llm")
 
