@@ -1,4 +1,4 @@
-# Script to check if logs/ has recent activity
+# Script to check if logs/ has activity
 import os
 
 log_dir = "logs"
