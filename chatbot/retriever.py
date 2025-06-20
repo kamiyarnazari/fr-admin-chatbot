@@ -7,6 +7,8 @@ import nltk
 from sentence_transformers import SentenceTransformer, util
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from peft import PeftModel
+import mlflow
+from datetime import datetime
 
 """
 Hybrid semantic retriever and LLM-based generator for the French Administration Chatbot.
@@ -126,51 +128,82 @@ class FAQWithLLM:
                    chat_history: list[tuple[str, str]] = None,
                    threshold: float = 0.7,
                    top_k: int = 2,
-                   high_confidence: float = 0.8) -> str:
+                   high_confidence: float = 0.85) -> str:
         
         # If the user input is empty
         if not user_input.strip():
             return "Veuillez poser votre question et je vous aiderai avec plaisir."
+
+        with mlflow.start_run(nested=True):
+            mlflow.log_param("input", user_input)
+            mlflow.log_param("threshold", threshold)
+
+
+            normalized = user_input.strip().lower()
+
+            # Small‐talk detection
+            for pat in self.small_talk_patterns:
+                if re.search(pat, normalized):
+                    return random.choice(self.small_talk_replies)
+
+            # Exact FAQ match
+            for item in self.faq_data:
+                if item["question"].strip().lower() == normalized:
+                    return item["answer"]
+
+            # Semantic search via embeddings
+            input_emb = self.model.encode(user_input, convert_to_tensor=True)
+            scores = util.cos_sim(input_emb, self.embeddings)[0]
+            top = scores.topk(k=top_k)
+            top_indices = top.indices.tolist()
+            top_scores  = top.values.tolist()
+
+            if top_scores:
+                mlflow.log_metric("top_similarity", top_scores[0])
+
+            # Super high‐confidence → return single FAQ answer
+            if top_scores and top_scores[0] >= high_confidence:
+                idx = top_indices[0]
+                return self.faq_data[idx]["answer"]
+
+            # Return up to top_k above threshold
+            responses = []
+            for idx, score in zip(top_indices, top_scores):
+                if score < threshold:
+                    continue
+                q = self.faq_data[idx]["question"]
+                a = self.faq_data[idx]["answer"]
+                responses.append(f"🔹 **{q}**\n{a}\n")
+
+            # Fallback to LLM if no FAQ match
+            if not responses:
+                mlflow.log_metric("used_fallback", 1)
+                final_response = self.generate_via_LLM(user_input, chat_history)
+            else:
+                final_response = "\n".join(responses)
+                mlflow.log_metric("used_fallback", 0)
+                
+            print("[DEBUG] Reached logging block")
+            # Construct Q/A log
+            log_entry = {
+                "timestamp": datetime.now().isoformat(),
+                "user_input": user_input,
+                "response": final_response,
+                "used_fallback": int(not responses),
+                "top_similarity": top_scores[0] if top_scores else None,
+            }
+
+            # Save the log to a temp JSON file
+            os.makedirs("logs", exist_ok=True)
+            log_file = f"logs/chatlog_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(log_file, "w", encoding="utf-8") as f:
+                json.dump(log_entry, f, indent=2)
+
+            mlflow.log_artifact(log_file, artifact_path="chatlogs")
+
+            return final_response
+
         
-
-        normalized = user_input.strip().lower()
-
-        # Small‐talk detection
-        for pat in self.small_talk_patterns:
-            if re.search(pat, normalized):
-                return random.choice(self.small_talk_replies)
-
-        # Exact FAQ match
-        for item in self.faq_data:
-            if item["question"].strip().lower() == normalized:
-                return item["answer"]
-
-        # Semantic search via embeddings
-        input_emb = self.model.encode(user_input, convert_to_tensor=True)
-        scores = util.cos_sim(input_emb, self.embeddings)[0]
-        top = scores.topk(k=top_k)
-        top_indices = top.indices.tolist()
-        top_scores  = top.values.tolist()
-
-        # Super high‐confidence → return single FAQ answer
-        if top_scores and top_scores[0] >= high_confidence:
-            idx = top_indices[0]
-            return self.faq_data[idx]["answer"]
-
-        # Return up to top_k above threshold
-        responses = []
-        for idx, score in zip(top_indices, top_scores):
-            if score < threshold:
-                continue
-            q = self.faq_data[idx]["question"]
-            a = self.faq_data[idx]["answer"]
-            responses.append(f"🔹 **{q}**\n{a}\n")
-
-        # Fallback to LLM if no FAQ match
-        if not responses:
-            return self.generate_via_LLM(user_input, chat_history)
-
-        return "\n".join(responses)
 
     def generate_via_LLM(self, user_input: str, chat_history=None) -> str:
         prompt = f"Réponds à la question administrative suivante :\n\n{user_input.strip()}\n\n"
