@@ -10,6 +10,7 @@ retriever = FAQWithLLM("data/faq.json")
 
 # Main response function
 def respond(message, chat_history):
+    print(f"📨 Question reçue: {message}") 
     if chat_history is None:
         chat_history = []
 
@@ -35,6 +36,9 @@ with gr.Blocks() as demo:
         container=True
     )
 
+    gr.Markdown("📌 *Projet open-source développé par [Kamyar](https://github.com/kamiyarnazari)*", elem_id="footer")
+
+
     examples = gr.Examples(
         examples=[
             "Comment faire une demande d'APL ?",
@@ -57,3 +61,4 @@ with gr.Blocks() as demo:
     submit_btn.click(respond, [msg, chatbot], [chatbot, msg])
     msg.submit(respond, [msg, chatbot], [chatbot, msg])
     clear_btn.click(lambda: ([], ""), [], outputs=[chatbot,msg])
+
