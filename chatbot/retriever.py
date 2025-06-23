@@ -36,6 +36,18 @@ This architecture combines speed and control from FAQ with flexibility and cover
 
 class FAQWithLLM:
     def __init__(self, faq_path: str):
+
+        """
+        Initializes the FAQWithLLM class.
+
+        - Loads and encodes FAQ questions using a multilingual SentenceTransformer.
+        - Prepares patterns and replies for small talk handling.
+        - Loads a quantized base LLM (Mistral-7B) and attaches a fine-tuned LoRA adapter.
+        - Selects between CPU or GPU execution based on availability.
+
+        Args:
+            faq_path (str): Path to the JSON FAQ file.
+        """
         #Sentence‐Transformer FAQ retrieval setup
         self.model = SentenceTransformer(
             "sentence-transformers/distiluse-base-multilingual-cased-v1"
@@ -120,6 +132,15 @@ class FAQWithLLM:
         self.max_tokens = MAX_TOKENS
 
     def _load_faq(self, path: str):
+        """
+        Loads the FAQ dataset from a JSON file.
+
+        Args:
+            path (str): File path to the JSON file.
+
+        Returns:
+            list[dict]: A list of FAQ entries with 'question' and 'answer' fields.
+        """
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
 
@@ -129,6 +150,27 @@ class FAQWithLLM:
                    threshold: float = 0.7,
                    top_k: int = 2,
                    high_confidence: float = 0.85) -> str:
+        
+        """
+            Handles user input and returns the most appropriate response.
+
+            - Responds to small talk if detected.
+            - Checks for exact question match in FAQ.
+            - Computes semantic similarity via SentenceTransformer embeddings.
+            - Returns high-confidence answers directly or top-k matches above threshold.
+            - Falls back to LLM response generation if no FAQ is sufficiently similar.
+            - Logs metadata and interactions via MLflow and JSON logs.
+
+            Args:
+                user_input (str): The user's question or message.
+                chat_history (list[tuple[str, str]], optional): Conversation context.
+                threshold (float): Minimum similarity to return a result from the FAQ.
+                top_k (int): Number of top semantic matches to consider.
+                high_confidence (float): Similarity threshold to return one result directly.
+
+            Returns:
+                str: The response, either from FAQ or LLM fallback.
+            """
         
         # If the user input is empty
         if not user_input.strip():
@@ -206,6 +248,20 @@ class FAQWithLLM:
         
 
     def generate_via_LLM(self, user_input: str, chat_history=None) -> str:
+        """
+            Uses the fine-tuned LLM (Mistral + LoRA) to generate a response.
+
+            This function is called when no FAQ entry matches the user's input
+            with high enough confidence. It constructs a prompt and performs
+            inference with the quantized model on the appropriate device.
+
+            Args:
+                user_input (str): The user’s original message.
+                chat_history (optional): Unused in this function (placeholder for future use).
+
+            Returns:
+                str: The generated response from the LLM.
+        """
         prompt = f"Réponds à la question administrative suivante :\n\n{user_input.strip()}\n\n"
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
 
